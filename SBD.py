@@ -1,4 +1,6 @@
+
 import re
+
 #Learning how to use sklearn 
 
 
@@ -11,16 +13,59 @@ with open('SBD.train.txt') as f:
     init_counter = 0
     neos_counter = 0
     split_str = final_str.splitlines()
-    for x in split_str:
-        if '.' in x and ' EOS' in x:
-            init_counter += 1
-        if '.' in x and 'NEOS' in x:
-            neos_counter += 1
+    left_per = []
+    right_per = []
+    len_three = []
+    left_cap = []
+    right_cap = []
+    cl_label = []
+    
+    for y in range(len(split_str)):
+        x = split_str[y]
+        if '.' in x:
+            
+            if ' EOS' in x:
+                init_counter += 1
+                l_word = x[:-4]
+                num_counter = 0
+                for a in x:
+                    if a.isalpha() != True:
+                        num_counter += 1
+                new_word_l = l_word[num_counter-2:]
+                left_per.append(new_word_l)
+                
+                if len(new_word_l) < 3:
+                    len_three.append(1)
+                else:
+                    len_three.append(0)
+
+
+            elif 'NEOS' in x:
+                neos_counter += 1
+                l_word = x[:-5]
+                num_counter = 0
+                for a in x:
+                    if a.isalpha() != True:
+                        num_counter += 1
+                new_word_l = l_word[num_counter-2:]
+                left_per.append(new_word_l)
+                if len(new_word_l) < 3:
+                    len_three.append(1)
+                else:
+                    len_three.append(0)
+                #left_cap.append()
+
+
    # print(final_str, end='')
     #print(split_str)
     print ('\n')
     print('Number of EOS:', init_counter - neos_counter)
     print('Number of NEOS:', neos_counter)
+    print(len_three)
 
     #print(s1, end='')
     
+#Need to make a feature vector
+#Each feature vector will be 0,1 or number representation of word
+#EXAMPLE: L<3 = [0,0,0,0,1,1,0,1] 
+#Example: Word Left of (.) = []
