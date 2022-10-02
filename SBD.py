@@ -33,12 +33,16 @@ with open('SBD.train.txt') as f:
                         num_counter += 1
                 new_word_l = l_word[num_counter-2:]
                 left_per.append(new_word_l)
-                
+                #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
                     len_three.append(1)
                 else:
                     len_three.append(0)
-
+                # LEFT UPPERCASE FEATURE VECTOR
+                if new_word_l[0].isupper():
+                    left_cap.append(1)
+                else:
+                    left_cap.append(0)
 
             elif 'NEOS' in x:
                 neos_counter += 1
@@ -49,11 +53,16 @@ with open('SBD.train.txt') as f:
                         num_counter += 1
                 new_word_l = l_word[num_counter-2:]
                 left_per.append(new_word_l)
+                #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
                     len_three.append(1)
                 else:
                     len_three.append(0)
-                #left_cap.append()
+                # LEFT UPPERCASE FEATURE VECTOR
+                if new_word_l[0].isupper():
+                    left_cap.append(1)
+                else:
+                    left_cap.append(0)
 
 
    # print(final_str, end='')
@@ -61,7 +70,7 @@ with open('SBD.train.txt') as f:
     print ('\n')
     print('Number of EOS:', init_counter - neos_counter)
     print('Number of NEOS:', neos_counter)
-    print(len_three)
+    print(left_cap)
 
     #print(s1, end='')
     
