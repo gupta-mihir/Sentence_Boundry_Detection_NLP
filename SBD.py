@@ -1,7 +1,22 @@
 
 import re
+from time import perf_counter
 
 #Learning how to use sklearn 
+#FUNC to remove class Label and number from period word
+def rm_num(word):
+    counter = 0
+    for x in word:
+        if x.isalpha() != True and x != ' ':
+            counter +=1
+    new_word = word[counter:]
+    return new_word
+
+def rm_label(word, label):
+    if ' EOS' in word:
+        new_word = word[:-4]
+    else:
+        new_word = word[:-5]
 
 
 with open('SBD.train.txt') as f:
@@ -19,19 +34,22 @@ with open('SBD.train.txt') as f:
     left_cap = []
     right_cap = []
     cl_label = []
+    per_counter = 0
     
     for y in range(len(split_str)):
         x = split_str[y]
         if '.' in x:
+            per_counter+=1
             if ' EOS' in x:
                 cl_label.append('EOS')
                 init_counter += 1
                 l_word = x[:-4]
                 num_counter = 0
-                for a in x:
-                    if a.isalpha() != True:
-                        num_counter += 1
-                new_word_l = l_word[num_counter-2:]
+                #for a in x:
+                 #   if a.isalpha() != True:
+                  #      num_counter += 1
+                #new_word_l = l_word[num_counter-2:]
+                new_word_l = rm_num(l_word)
                 left_per.append(new_word_l)
                 #Right word of period
                 if y+1 < len(split_str):
@@ -61,10 +79,12 @@ with open('SBD.train.txt') as f:
                 neos_counter += 1
                 l_word = x[:-5]
                 num_counter = 0
-                for a in x:
-                    if a.isalpha() != True:
-                        num_counter += 1
-                new_word_l = l_word[num_counter-2:]
+              #  for a in x:
+                #    if a.isalpha() != True:
+                 #       num_counter += 1
+               # new_word_l = l_word[num_counter-2:]
+                new_word_l = rm_num(l_word)
+                left_per.append(new_word_l)
                 left_per.append(new_word_l)
                 #right of period
                 if y+1 < len(split_str):
@@ -95,7 +115,13 @@ with open('SBD.train.txt') as f:
     print ('\n')
     print('Number of EOS:', init_counter - neos_counter)
     print('Number of NEOS:', neos_counter)
-    print(right_per)
+    print('Length of Left Per:', len(left_per))
+    print('Length of Right Per:', len(right_per))
+    print('Length of < 3:', len(len_three))
+    print('Length of Left Cap:', len(left_cap))
+    print('Length of Class:', len(cl_label))
+    print('Number of Per Counter:', per_counter)
+    print(left_per)
 
     #print(s1, end='')
     
