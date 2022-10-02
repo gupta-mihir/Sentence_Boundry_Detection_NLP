@@ -33,6 +33,12 @@ with open('SBD.train.txt') as f:
                         num_counter += 1
                 new_word_l = l_word[num_counter-2:]
                 left_per.append(new_word_l)
+                #Right word of period
+                if y+1 < len(split_str):
+                    right_per.append(split_str[y+1])
+                else:
+                    right_per.append(0)
+
                 #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
                     len_three.append(1)
@@ -54,6 +60,12 @@ with open('SBD.train.txt') as f:
                         num_counter += 1
                 new_word_l = l_word[num_counter-2:]
                 left_per.append(new_word_l)
+                #right of period
+                if y+1 < len(split_str):
+                    right_per.append(split_str[y+1])
+                else:
+                    right_per.append(0)
+
                 #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
                     len_three.append(1)
@@ -71,7 +83,7 @@ with open('SBD.train.txt') as f:
     print ('\n')
     print('Number of EOS:', init_counter - neos_counter)
     print('Number of NEOS:', neos_counter)
-    print(cl_label)
+    print(left_per)
 
     #print(s1, end='')
     
