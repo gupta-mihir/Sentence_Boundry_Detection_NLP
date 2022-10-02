@@ -35,7 +35,13 @@ with open('SBD.train.txt') as f:
                 left_per.append(new_word_l)
                 #Right word of period
                 if y+1 < len(split_str):
-                    right_per.append(split_str[y+1])
+                    r_count = 0
+                    r_str = split_str[y+1]
+                    for a in r_str:
+                        if a.isalpha() != True:
+                            r_count += 1
+                    new_word_r = r_str[r_count-2:]
+                    right_per.append(new_word_r)
                 else:
                     right_per.append(0)
 
@@ -62,7 +68,13 @@ with open('SBD.train.txt') as f:
                 left_per.append(new_word_l)
                 #right of period
                 if y+1 < len(split_str):
-                    right_per.append(split_str[y+1])
+                    r_count = 0
+                    r_str = split_str[y+1]
+                    for a in r_str:
+                        if a.isalpha() != True:
+                            r_count += 1
+                    new_word_r = r_str[r_count-2:]
+                    right_per.append(new_word_r)
                 else:
                     right_per.append(0)
 
@@ -83,7 +95,7 @@ with open('SBD.train.txt') as f:
     print ('\n')
     print('Number of EOS:', init_counter - neos_counter)
     print('Number of NEOS:', neos_counter)
-    print(left_per)
+    print(right_per)
 
     #print(s1, end='')
     
