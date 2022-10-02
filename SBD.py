@@ -1,4 +1,5 @@
 
+
 import re
 from time import perf_counter
 
@@ -12,11 +13,6 @@ def rm_num(word):
     new_word = word[counter:]
     return new_word
 
-def rm_label(word, label):
-    if ' EOS' in word:
-        new_word = word[:-4]
-    else:
-        new_word = word[:-5]
 
 
 with open('SBD.train.txt') as f:
@@ -44,24 +40,33 @@ with open('SBD.train.txt') as f:
                 cl_label.append('EOS')
                 init_counter += 1
                 l_word = x[:-4]
-                num_counter = 0
-                #for a in x:
-                 #   if a.isalpha() != True:
-                  #      num_counter += 1
-                #new_word_l = l_word[num_counter-2:]
+                #l_word = rm_label(x, 'EOS')
                 new_word_l = rm_num(l_word)
                 left_per.append(new_word_l)
                 #Right word of period
                 if y+1 < len(split_str):
                     r_count = 0
                     r_str = split_str[y+1]
-                    for a in r_str:
-                        if a.isalpha() != True:
-                            r_count += 1
-                    new_word_r = r_str[r_count-2:]
+                    new_word_r = rm_num(r_str)
+                   # new_word_r = r_str[r_count-1:]
                     right_per.append(new_word_r)
+
+                    if new_word_r[0] != ' ':
+                        if new_word_r[0].isupper():
+                            right_cap.append(1)
+                        else:
+                            right_cap.append(0)
+                    elif new_word_r[0] == ' ' and new_word_r[1].isalpha:
+                        if new_word_r[1].isupper():
+                            right_cap.append(1)
+                        else:
+                            right_cap.append(0)
+                    else:
+                        right_cap.append(0)
+
                 else:
                     right_per.append(0)
+                    right_cap.append(0)
 
                 #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
@@ -78,11 +83,7 @@ with open('SBD.train.txt') as f:
                 cl_label.append('NEOS')
                 neos_counter += 1
                 l_word = x[:-5]
-                num_counter = 0
-              #  for a in x:
-                #    if a.isalpha() != True:
-                 #       num_counter += 1
-               # new_word_l = l_word[num_counter-2:]
+                #l_word = rm_label(x, 'NEOS')
                 new_word_l = rm_num(l_word)
                 left_per.append(new_word_l)
                 left_per.append(new_word_l)
@@ -90,13 +91,25 @@ with open('SBD.train.txt') as f:
                 if y+1 < len(split_str):
                     r_count = 0
                     r_str = split_str[y+1]
-                    for a in r_str:
-                        if a.isalpha() != True:
-                            r_count += 1
-                    new_word_r = r_str[r_count-2:]
+                    new_word_r = rm_num(r_str)
                     right_per.append(new_word_r)
+                    
+                    if new_word_r[0] != ' ':
+                        if new_word_r[0].isupper():
+                            right_cap.append(1)
+                        else:
+                            right_cap.append(0)
+                    elif new_word_r[0] == ' ' and new_word_r[1].isalpha:
+                        if new_word_r[1].isupper():
+                            right_cap.append(1)
+                        else:
+                            right_cap.append(0)
+                    else:
+                        right_cap.append(0)
+
                 else:
                     right_per.append(0)
+                    right_cap.append(0)
 
                 #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
@@ -121,7 +134,8 @@ with open('SBD.train.txt') as f:
     print('Length of Left Cap:', len(left_cap))
     print('Length of Class:', len(cl_label))
     print('Number of Per Counter:', per_counter)
-    print(left_per)
+    print (right_per)
+    print(right_cap)
 
     #print(s1, end='')
     
