@@ -23,8 +23,8 @@ with open('SBD.train.txt') as f:
     for y in range(len(split_str)):
         x = split_str[y]
         if '.' in x:
-            
             if ' EOS' in x:
+                cl_label.append('EOS')
                 init_counter += 1
                 l_word = x[:-4]
                 num_counter = 0
@@ -45,6 +45,7 @@ with open('SBD.train.txt') as f:
                     left_cap.append(0)
 
             elif 'NEOS' in x:
+                cl_label.append('NEOS')
                 neos_counter += 1
                 l_word = x[:-5]
                 num_counter = 0
@@ -70,7 +71,7 @@ with open('SBD.train.txt') as f:
     print ('\n')
     print('Number of EOS:', init_counter - neos_counter)
     print('Number of NEOS:', neos_counter)
-    print(left_cap)
+    print(cl_label)
 
     #print(s1, end='')
     
