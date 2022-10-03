@@ -1,7 +1,12 @@
 
 
+from cgi import test
 import re
 from time import perf_counter
+from turtle import right
+from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
 
 #Learning how to use sklearn 
 #FUNC to remove class Label and number from period word
@@ -24,12 +29,16 @@ with open('SBD.train.txt') as f:
     init_counter = 0
     neos_counter = 0
     split_str = final_str.splitlines()
+#FEATURE VECTOR features assigned
     left_per = []
     right_per = []
     len_three = []
     left_cap = []
     right_cap = []
     cl_label = []
+#3 MORE Feature Vectors
+
+
     per_counter = 0
     
     for y in range(len(split_str)):
@@ -86,7 +95,7 @@ with open('SBD.train.txt') as f:
                 #l_word = rm_label(x, 'NEOS')
                 new_word_l = rm_num(l_word)
                 left_per.append(new_word_l)
-                left_per.append(new_word_l)
+                #left_per.append(new_word_l)
                 #right of period
                 if y+1 < len(split_str):
                     r_count = 0
@@ -121,10 +130,37 @@ with open('SBD.train.txt') as f:
                     left_cap.append(1)
                 else:
                     left_cap.append(0)
+    
+    f_vect = [[] for x in range(len(left_per))]
+    for x in range(len(left_per)):
+        f_in_vect = []
+        f_in_vect.append(left_per[x])
+        f_in_vect.append(right_per[x])
+        f_in_vect.append(len_three[x])
+        f_in_vect.append(left_cap[x])
+        f_in_vect.append(right_cap[x])
+        #f_in_vect.append(cl_label[x])
+        f_vect[x] = f_in_vect
+
+    X = f_vect
+    Y = cl_label
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
+    clf = DecisionTreeClassifier()
+    clf = clf.fit(X_train, Y_train)
+    print(clf.get_params())
+
+
+
+
+
+
+   
+
 
 
    # print(final_str, end='')
     #print(split_str)
+    
     print ('\n')
     print('Number of EOS:', init_counter - neos_counter)
     print('Number of NEOS:', neos_counter)
@@ -134,8 +170,11 @@ with open('SBD.train.txt') as f:
     print('Length of Left Cap:', len(left_cap))
     print('Length of Class:', len(cl_label))
     print('Number of Per Counter:', per_counter)
-    print (right_per)
-    print(right_cap)
+    print(f_vect)
+    print(len(f_vect))
+   # print(left_per)
+    #print (right_per)
+   # print(right_cap)
 
     #print(s1, end='')
     
