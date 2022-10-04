@@ -7,16 +7,24 @@ from turtle import right
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
+import math
+
 
 #Learning how to use sklearn 
 #FUNC to remove class Label and number from period word
 def rm_num(word):
     counter = 0
     for x in word:
-        if x.isalpha() != True and x != ' ':
+        if x.isalpha() != True and x != ' ' and x != '$' and x != '%':
             counter +=1
     new_word = word[counter:]
     return new_word
+
+def convertToNumber (s):
+    return int.from_bytes(s.encode(), 'little')
+
+def convertFromNumber (n):
+    return n.to_bytes(math.ceil(n.bit_length() / 8), 'little').decode()
 
 
 
@@ -58,7 +66,8 @@ with open('SBD.train.txt') as f:
                     r_str = split_str[y+1]
                     new_word_r = rm_num(r_str)
                    # new_word_r = r_str[r_count-1:]
-                    right_per.append(new_word_r)
+                    fl_r = convertToNumber(new_word_r)
+                    right_per.append(fl_r)
 
                     if new_word_r[0] != ' ':
                         if new_word_r[0].isupper():
@@ -101,7 +110,8 @@ with open('SBD.train.txt') as f:
                     r_count = 0
                     r_str = split_str[y+1]
                     new_word_r = rm_num(r_str)
-                    right_per.append(new_word_r)
+                    fl_r = convertToNumber(new_word_r)
+                    right_per.append(fl_r)
                     
                     if new_word_r[0] != ' ':
                         if new_word_r[0].isupper():
@@ -142,12 +152,12 @@ with open('SBD.train.txt') as f:
         #f_in_vect.append(cl_label[x])
         f_vect[x] = f_in_vect
 
-    X = f_vect
-    Y = cl_label
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
-    clf = DecisionTreeClassifier()
-    clf = clf.fit(X_train, Y_train)
-    print(clf.get_params())
+   # X = f_vect
+    #Y = cl_label
+    #X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
+    #clf = DecisionTreeClassifier()
+    #clf = clf.fit(X_train, Y_train)
+    #print(clf.get_params())
 
 
 
@@ -170,8 +180,9 @@ with open('SBD.train.txt') as f:
     print('Length of Left Cap:', len(left_cap))
     print('Length of Class:', len(cl_label))
     print('Number of Per Counter:', per_counter)
-    print(f_vect)
-    print(len(f_vect))
+    #print(f_vect)
+   # print(len(f_vect))
+    print(right_per)
    # print(left_per)
     #print (right_per)
    # print(right_cap)
