@@ -1,6 +1,7 @@
 
 
 from cgi import test
+from doctest import script_from_examples
 import re
 from time import perf_counter
 from turtle import right
@@ -21,14 +22,6 @@ def rm_num(word):
             counter +=1
     new_word = word[counter:]
     return new_word
-
-def convertToNumber (s):
-    return int.from_bytes(s.encode(), 'little')
-
-def convertFromNumber (n):
-    return n.to_bytes(math.ceil(n.bit_length() / 8), 'little').decode()
-
-
 
 with open('SBD.train.txt') as f:
     lines = f.read()
@@ -192,7 +185,7 @@ with open('SBD.train.txt') as f:
                     left_cap.append(0)
 
 
-    print(small_second_right)
+    #print(small_second_right)
 
     lb = LabelEncoder()
     fl_right_per = lb.fit_transform(right_per)
@@ -215,15 +208,212 @@ with open('SBD.train.txt') as f:
         f_vect[x] = f_in_vect
     #print(f_vect)
     
-    X = f_vect
-    Y = cl_label
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
-    clf = DecisionTreeClassifier(max_depth=8, criterion="entropy")
-    clf = clf.fit(X_train, Y_train)
-    print(clf.get_params())
-    #print(X_test) 
-    predictions = clf.predict_proba(X_test)
-    print(predictions)
+
+
+#?????????????????????????????????????????????
+#/////////////////////////////////////////////
+with open('SBD.test.txt') as f_test:
+    lines_test = f_test.read()
+    s1_test = re.sub('[!,:,?,]', "", lines)
+    import re
+    myex_test = re.compile(r"(TOK)")
+    final_str_test = re.sub(myex, '',s1)
+    init_counter_test = 0
+    neos_counter_test = 0
+    split_str_test = final_str_test.splitlines()
+#FEATURE VECTOR features assigned
+    left_per_test = []
+    right_per_test = []
+    len_three_test = []
+    left_cap_test = []
+    right_cap_test = []
+    cl_label_test = []
+    
+
+
+#3 MORE Feature Vectors
+    second_left_test = [] #word before the Word Left of Period 
+    small_second_right_test = [] # Length of the 2nd right word
+    second_right_test = [] #word after the Word Right of Period
+
+    per_counter_test = 0
+    
+    for y in range(len(split_str_test)):
+        x = split_str_test[y]
+        if '.' in x:
+            per_counter_test+=1
+            if ' EOS' in x:
+                cl_label_test.append('EOS')
+
+                #LEFT WORD OF PERIOD
+                init_counter_test += 1
+                l_word = x[:-4]
+                new_word_l = rm_num(l_word)
+                left_per_test.append(new_word_l)
+
+                #SECOND LEFT WORD OF PERIOD
+                if y != 0:
+                    l_count = 0
+                    sl_str = split_str[y-1]
+                    word_l = rm_num(sl_str)
+                    second_left_test.append(word_l)
+                else:
+                    second_left.append(0)
+
+                #RIGHT WORD OF PERIOD
+                if y+1 < len(split_str_test):
+                    r_count = 0
+                    r_str = split_str[y+1]
+                    new_word_r = rm_num(r_str)
+                    right_per_test.append(new_word_r)
+
+                    if new_word_r[0] != ' ':
+                        if new_word_r[0].isupper():
+                            right_cap_test.append(1)
+                        else:
+                            right_cap_test.append(0)
+                    elif new_word_r[0] == ' ' and new_word_r[1].isalpha:
+                        if new_word_r[1].isupper():
+                            right_cap_test.append(1)
+                        else:
+                            right_cap_test.append(0)
+                    else:
+                        right_cap_test.append(0)
+
+                else:
+                    right_per_test.append(0)
+                    right_cap_test.append(0)
+                #SECOND WORD AFTER RIGHT OF PERIOD
+                if y+2 < len(split_str_test):
+                    r_count = 0
+                    r_str = split_str_test[y+2]
+                    new_word_r = rm_num(r_str)
+                    second_right.append(new_word_r)
+                    if len(new_word_r) < 4:
+                        small_second_right_test.append(1)
+                    else:
+                        small_second_right_test.append(0)
+                else:
+                    second_right_test.append(0)
+                    small_second_right_test.append(0)
+                #LEFT WORD LESS THAN 3 CHARS
+                if len(new_word_l) < 3:
+                    len_three_test.append(1)
+                else:
+                    len_three_test.append(0)
+                # LEFT UPPERCASE FEATURE VECTOR
+                if new_word_l[0].isupper():
+                    left_cap_test.append(1)
+                else:
+                    left_cap_test.append(0)
+
+            elif 'NEOS' in x:
+                cl_label_test.append('NEOS')
+                neos_counter_test += 1
+                
+                #LEFT WORD OF PERIOD
+                l_word = x[:-5]
+                new_word_l = rm_num(l_word)
+                left_per_test.append(new_word_l)
+
+                #SECOND WORD LEFT OF PERIOD
+                if y != 0:
+                    l_count = 0
+                    sl_str = split_str_test[y-1]
+                    word_l = rm_num(sl_str)
+                    second_left_test.append(word_l)
+                else:
+                    second_left_test.append(0)
+                #RIGHT WORD OF PERIOD
+                if y+1 < len(split_str_test):
+                    r_count = 0
+                    r_str = split_str[y+1]
+                    new_word_r = rm_num(r_str)
+                    right_per_test.append(new_word_r)
+                    
+                    if new_word_r[0] != ' ':
+                        if new_word_r[0].isupper():
+                            right_cap_test.append(1)
+                        else:
+                            right_cap_test.append(0)
+                    elif new_word_r[0] == ' ' and new_word_r[1].isalpha:
+                        if new_word_r[1].isupper():
+                            right_cap_test.append(1)
+                        else:
+                            right_cap_test.append(0)
+                    else:
+                        right_cap_test.append(0)
+
+                else:
+                    right_per_test.append(0)
+                    right_cap_test.append(0)
+                
+                #SECOND WORD RIGHT OF PERIOD
+                if y+2 < len(split_str_test):
+                    r_count = 0
+                    r_str = split_str_test[y+2]
+                    new_word_r = rm_num(r_str)
+                    second_right_test.append(new_word_r)
+                    if len(new_word_r) < 4:
+                        small_second_right_test.append(1)
+                    else:
+                        small_second_right_test.append(0)
+                else:
+                    second_right_test.append(0)
+                    small_second_right_test.append(0)
+                #LEFT WORD LESS THAN 3 CHARS
+                if len(new_word_l) < 3:
+                    len_three_test.append(1)
+                else:
+                    len_three_test.append(0)
+
+                # LEFT UPPERCASE FEATURE VECTOR
+                if new_word_l[0].isupper():
+                    left_cap_test.append(1)
+                else:
+                    left_cap_test.append(0)
+
+
+    #print(small_second_right)
+
+lb_test = LabelEncoder()
+fl_right_per_test = lb_test.fit_transform(right_per_test)
+fl_left_per_test = lb_test.fit_transform(left_per_test)
+sec_fl_left_test = lb_test.fit_transform(second_left_test)
+sec_fl_right_test = lb_test.fit_transform(second_right_test)
+        
+f_vect_test = [[] for x in range(len(left_per))]
+for x in range(len(left_per_test)):
+    f_in_vect_test = []
+    f_in_vect_test.append(fl_left_per_test[x])
+    f_in_vect_test.append(fl_right_per_test[x])
+    f_in_vect_test.append(len_three_test[x])
+    f_in_vect_test.append(left_cap_test[x])
+    f_in_vect_test.append(right_cap_test[x])
+   # f_in_vect.append(sec_fl_left[x])
+   # f_in_vect.append(sec_fl_right[x])
+   # f_in_vect.append(small_second_right[x])
+   #f_in_vect.append(cl_label[x])
+    f_vect_test[x] = f_in_vect_test
+
+
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+X_train = f_vect
+Y_train = cl_label
+X_test = f_vect_test
+Y_test = cl_label_test
+#X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
+clf = DecisionTreeClassifier(max_depth=8, criterion="entropy")
+clf = clf.fit(X_train, Y_train)
+#print(clf.get_params())
+res_pred = clf.predict(X_test)
+score = clf.score(X_test, Y_test)
+print(score)
+#print(X_test) 
+predictions = clf.predict_proba(X_test)
+#print(predictions)
     
     #print(classification_report(Y_test, predictions, target_names=['EOS', 'NEOS']))
 
