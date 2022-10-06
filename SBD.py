@@ -8,6 +8,8 @@ from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 import math
+from sklearn.preprocessing import LabelEncoder
+from sklearn.metrics import classification_report
 
 
 #Learning how to use sklearn 
@@ -30,7 +32,7 @@ def convertFromNumber (n):
 
 with open('SBD.train.txt') as f:
     lines = f.read()
-    s1 = re.sub("[!,:,?,]", "", lines)
+    s1 = re.sub('[!,:,?,]', "", lines)
     import re
     myex = re.compile(r"(TOK)")
     final_str = re.sub(myex, '',s1)
@@ -44,8 +46,13 @@ with open('SBD.train.txt') as f:
     left_cap = []
     right_cap = []
     cl_label = []
-#3 MORE Feature Vectors
+    
 
+
+#3 MORE Feature Vectors
+    second_left = [] #word before the Word Left of Period 
+    small_second_right = [] # Length of the 2nd right word
+    second_right = [] #word after the Word Right of Period
 
     per_counter = 0
     
@@ -55,19 +62,28 @@ with open('SBD.train.txt') as f:
             per_counter+=1
             if ' EOS' in x:
                 cl_label.append('EOS')
+
+                #LEFT WORD OF PERIOD
                 init_counter += 1
                 l_word = x[:-4]
-                #l_word = rm_label(x, 'EOS')
                 new_word_l = rm_num(l_word)
                 left_per.append(new_word_l)
-                #Right word of period
+
+                #SECOND LEFT WORD OF PERIOD
+                if y != 0:
+                    l_count = 0
+                    sl_str = split_str[y-1]
+                    word_l = rm_num(sl_str)
+                    second_left.append(word_l)
+                else:
+                    second_left.append(0)
+
+                #RIGHT WORD OF PERIOD
                 if y+1 < len(split_str):
                     r_count = 0
                     r_str = split_str[y+1]
                     new_word_r = rm_num(r_str)
-                   # new_word_r = r_str[r_count-1:]
-                    fl_r = convertToNumber(new_word_r)
-                    right_per.append(fl_r)
+                    right_per.append(new_word_r)
 
                     if new_word_r[0] != ' ':
                         if new_word_r[0].isupper():
@@ -85,7 +101,19 @@ with open('SBD.train.txt') as f:
                 else:
                     right_per.append(0)
                     right_cap.append(0)
-
+                #SECOND WORD AFTER RIGHT OF PERIOD
+                if y+2 < len(split_str):
+                    r_count = 0
+                    r_str = split_str[y+2]
+                    new_word_r = rm_num(r_str)
+                    second_right.append(new_word_r)
+                    if len(new_word_r) < 4:
+                        small_second_right.append(1)
+                    else:
+                        small_second_right.append(0)
+                else:
+                    second_right.append(0)
+                    small_second_right.append(0)
                 #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
                     len_three.append(1)
@@ -100,18 +128,26 @@ with open('SBD.train.txt') as f:
             elif 'NEOS' in x:
                 cl_label.append('NEOS')
                 neos_counter += 1
+                
+                #LEFT WORD OF PERIOD
                 l_word = x[:-5]
-                #l_word = rm_label(x, 'NEOS')
                 new_word_l = rm_num(l_word)
                 left_per.append(new_word_l)
-                #left_per.append(new_word_l)
-                #right of period
+
+                #SECOND WORD LEFT OF PERIOD
+                if y != 0:
+                    l_count = 0
+                    sl_str = split_str[y-1]
+                    word_l = rm_num(sl_str)
+                    second_left.append(word_l)
+                else:
+                    second_left.append(0)
+                #RIGHT WORD OF PERIOD
                 if y+1 < len(split_str):
                     r_count = 0
                     r_str = split_str[y+1]
                     new_word_r = rm_num(r_str)
-                    fl_r = convertToNumber(new_word_r)
-                    right_per.append(fl_r)
+                    right_per.append(new_word_r)
                     
                     if new_word_r[0] != ' ':
                         if new_word_r[0].isupper():
@@ -129,39 +165,69 @@ with open('SBD.train.txt') as f:
                 else:
                     right_per.append(0)
                     right_cap.append(0)
-
+                
+                #SECOND WORD RIGHT OF PERIOD
+                if y+2 < len(split_str):
+                    r_count = 0
+                    r_str = split_str[y+2]
+                    new_word_r = rm_num(r_str)
+                    second_right.append(new_word_r)
+                    if len(new_word_r) < 4:
+                        small_second_right.append(1)
+                    else:
+                        small_second_right.append(0)
+                else:
+                    second_right.append(0)
+                    small_second_right.append(0)
                 #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
                     len_three.append(1)
                 else:
                     len_three.append(0)
+
                 # LEFT UPPERCASE FEATURE VECTOR
                 if new_word_l[0].isupper():
                     left_cap.append(1)
                 else:
                     left_cap.append(0)
-    
+
+
+    print(small_second_right)
+
+    lb = LabelEncoder()
+    fl_right_per = lb.fit_transform(right_per)
+    fl_left_per = lb.fit_transform(left_per)
+    sec_fl_left = lb.fit_transform(second_left)
+    sec_fl_right = lb.fit_transform(second_right)
+        
     f_vect = [[] for x in range(len(left_per))]
     for x in range(len(left_per)):
         f_in_vect = []
-        f_in_vect.append(left_per[x])
-        f_in_vect.append(right_per[x])
+        f_in_vect.append(fl_left_per[x])
+        f_in_vect.append(fl_right_per[x])
         f_in_vect.append(len_three[x])
         f_in_vect.append(left_cap[x])
         f_in_vect.append(right_cap[x])
+       # f_in_vect.append(sec_fl_left[x])
+       # f_in_vect.append(sec_fl_right[x])
+       # f_in_vect.append(small_second_right[x])
         #f_in_vect.append(cl_label[x])
         f_vect[x] = f_in_vect
+    #print(f_vect)
+    
+    X = f_vect
+    Y = cl_label
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
+    clf = DecisionTreeClassifier(max_depth=8, criterion="entropy")
+    clf = clf.fit(X_train, Y_train)
+    print(clf.get_params())
+    #print(X_test) 
+    predictions = clf.predict_proba(X_test)
+    print(predictions)
+    
+    #print(classification_report(Y_test, predictions, target_names=['EOS', 'NEOS']))
 
-   # X = f_vect
-    #Y = cl_label
-    #X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
-    #clf = DecisionTreeClassifier()
-    #clf = clf.fit(X_train, Y_train)
-    #print(clf.get_params())
-
-
-
-
+    
 
 
    
@@ -171,18 +237,18 @@ with open('SBD.train.txt') as f:
    # print(final_str, end='')
     #print(split_str)
     
-    print ('\n')
-    print('Number of EOS:', init_counter - neos_counter)
-    print('Number of NEOS:', neos_counter)
-    print('Length of Left Per:', len(left_per))
-    print('Length of Right Per:', len(right_per))
-    print('Length of < 3:', len(len_three))
-    print('Length of Left Cap:', len(left_cap))
-    print('Length of Class:', len(cl_label))
-    print('Number of Per Counter:', per_counter)
+   # print ('\n')
+   # print('Number of EOS:', init_counter - neos_counter)
+  #  print('Number of NEOS:', neos_counter)
+   # print('Length of Left Per:', len(left_per))
+   # print('Length of Right Per:', len(right_per))
+   # print('Length of < 3:', len(len_three))
+   # print('Length of Left Cap:', len(left_cap))
+   # print('Length of Class:', len(cl_label))
+   # print('Number of Per Counter:', per_counter)
     #print(f_vect)
    # print(len(f_vect))
-    print(right_per)
+    #print(right_per)
    # print(left_per)
     #print (right_per)
    # print(right_cap)
