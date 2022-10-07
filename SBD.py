@@ -1,16 +1,13 @@
 
 
-from cgi import test
-from doctest import script_from_examples
 import re
-from time import perf_counter
-from turtle import right
 from sklearn import tree
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 import math
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report
+import sys
 
 
 #Learning how to use sklearn 
@@ -23,7 +20,10 @@ def rm_num(word):
     new_word = word[counter:]
     return new_word
 
-with open('SBD.train.txt') as f:
+train_data_filename = sys.argv[1]
+test_data_filename = sys.argv[2]
+
+with open(train_data_filename) as f:
     lines = f.read()
     s1 = re.sub('[!,:,?,]', "", lines)
     import re
@@ -49,8 +49,8 @@ with open('SBD.train.txt') as f:
 
     per_counter = 0
     
-    for y in range(len(split_str)):
-        x = split_str[y]
+    for i in range(len(split_str)):
+        x = split_str[i]
         if '.' in x:
             per_counter+=1
             if ' EOS' in x:
@@ -60,23 +60,23 @@ with open('SBD.train.txt') as f:
                 init_counter += 1
                 l_word = x[:-4]
                 new_word_l = rm_num(l_word)
-                left_per.append(new_word_l)
+                left_per.append(hash(new_word_l))
 
                 #SECOND LEFT WORD OF PERIOD
-                if y != 0:
+                if i != 0:
                     l_count = 0
-                    sl_str = split_str[y-1]
+                    sl_str = split_str[i-1]
                     word_l = rm_num(sl_str)
-                    second_left.append(word_l)
+                    second_left.append(hash(word_l))
                 else:
                     second_left.append(0)
 
                 #RIGHT WORD OF PERIOD
-                if y+1 < len(split_str):
+                if i+1 < len(split_str):
                     r_count = 0
-                    r_str = split_str[y+1]
+                    r_str = split_str[i+1]
                     new_word_r = rm_num(r_str)
-                    right_per.append(new_word_r)
+                    right_per.append(hash(new_word_r))
 
                     if new_word_r[0] != ' ':
                         if new_word_r[0].isupper():
@@ -95,18 +95,18 @@ with open('SBD.train.txt') as f:
                     right_per.append(0)
                     right_cap.append(0)
                 #SECOND WORD AFTER RIGHT OF PERIOD
-                if y+2 < len(split_str):
+                if i+2 < len(split_str):
                     r_count = 0
-                    r_str = split_str[y+2]
+                    r_str = split_str[i+2]
                     new_word_r = rm_num(r_str)
-                    second_right.append(new_word_r)
+                    second_right.append(hash(new_word_r))
                     if len(new_word_r) < 4:
-                        small_second_right.append(1)
+                        small_second_right.append(1.0)
                     else:
-                        small_second_right.append(0)
+                        small_second_right.append(0.0)
                 else:
                     second_right.append(0)
-                    small_second_right.append(0)
+                    small_second_right.append(0.0)
                 #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
                     len_three.append(1)
@@ -125,22 +125,22 @@ with open('SBD.train.txt') as f:
                 #LEFT WORD OF PERIOD
                 l_word = x[:-5]
                 new_word_l = rm_num(l_word)
-                left_per.append(new_word_l)
+                left_per.append(hash(new_word_l))
 
                 #SECOND WORD LEFT OF PERIOD
-                if y != 0:
+                if i != 0:
                     l_count = 0
-                    sl_str = split_str[y-1]
+                    sl_str = split_str[i-1]
                     word_l = rm_num(sl_str)
-                    second_left.append(word_l)
+                    second_left.append(hash(word_l))
                 else:
                     second_left.append(0)
                 #RIGHT WORD OF PERIOD
-                if y+1 < len(split_str):
+                if i+1 < len(split_str):
                     r_count = 0
-                    r_str = split_str[y+1]
+                    r_str = split_str[i+1]
                     new_word_r = rm_num(r_str)
-                    right_per.append(new_word_r)
+                    right_per.append(hash(new_word_r))
                     
                     if new_word_r[0] != ' ':
                         if new_word_r[0].isupper():
@@ -160,18 +160,18 @@ with open('SBD.train.txt') as f:
                     right_cap.append(0)
                 
                 #SECOND WORD RIGHT OF PERIOD
-                if y+2 < len(split_str):
+                if i+2 < len(split_str):
                     r_count = 0
-                    r_str = split_str[y+2]
+                    r_str = split_str[i+2]
                     new_word_r = rm_num(r_str)
-                    second_right.append(new_word_r)
+                    second_right.append(hash(new_word_r))
                     if len(new_word_r) < 4:
-                        small_second_right.append(1)
+                        small_second_right.append(1.0)
                     else:
-                        small_second_right.append(0)
+                        small_second_right.append(0.0)
                 else:
                     second_right.append(0)
-                    small_second_right.append(0)
+                    small_second_right.append(0.0)
                 #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
                     len_three.append(1)
@@ -187,35 +187,34 @@ with open('SBD.train.txt') as f:
 
     #print(small_second_right)
 
-    lb = LabelEncoder()
-    fl_right_per = lb.fit_transform(right_per)
-    fl_left_per = lb.fit_transform(left_per)
-    sec_fl_left = lb.fit_transform(second_left)
-    sec_fl_right = lb.fit_transform(second_right)
+    #lb = LabelEncoder()
+    #fl_right_per = lb.fit_transform(right_per)
+    #fl_left_per = lb.fit_transform(left_per)
+    #sec_fl_left = lb.fit_transform(second_left)
+    #sec_fl_right = lb.fit_transform(second_right)
         
     f_vect = [[] for x in range(len(left_per))]
     for x in range(len(left_per)):
         f_in_vect = []
-        f_in_vect.append(fl_left_per[x])
-        f_in_vect.append(fl_right_per[x])
+        f_in_vect.append(left_per[x])
+        f_in_vect.append(right_per[x])
         f_in_vect.append(len_three[x])
         f_in_vect.append(left_cap[x])
         f_in_vect.append(right_cap[x])
-       # f_in_vect.append(sec_fl_left[x])
-       # f_in_vect.append(sec_fl_right[x])
-       # f_in_vect.append(small_second_right[x])
-        #f_in_vect.append(cl_label[x])
+        f_in_vect.append(second_left[x])
+        f_in_vect.append(second_right[x])
+        f_in_vect.append(small_second_right[x])
+        
+        
         f_vect[x] = f_in_vect
-    #print(f_vect)
     
 
 
 #?????????????????????????????????????????????
 #/////////////////////////////////////////////
-with open('SBD.test.txt') as f_test:
+with open(test_data_filename) as f_test:
     lines_test = f_test.read()
     s1_test = re.sub('[!,:,?,]', "", lines)
-    import re
     myex_test = re.compile(r"(TOK)")
     final_str_test = re.sub(myex, '',s1)
     init_counter_test = 0
@@ -230,7 +229,6 @@ with open('SBD.test.txt') as f_test:
     cl_label_test = []
     
 
-
 #3 MORE Feature Vectors
     second_left_test = [] #word before the Word Left of Period 
     small_second_right_test = [] # Length of the 2nd right word
@@ -238,9 +236,9 @@ with open('SBD.test.txt') as f_test:
 
     per_counter_test = 0
     
-    for y in range(len(split_str_test)):
-        x = split_str_test[y]
-        if '.' in x:
+    for i in range(len(split_str_test)):
+        x = split_str_test[i]
+        if '. ' in x:
             per_counter_test+=1
             if ' EOS' in x:
                 cl_label_test.append('EOS')
@@ -249,23 +247,23 @@ with open('SBD.test.txt') as f_test:
                 init_counter_test += 1
                 l_word = x[:-4]
                 new_word_l = rm_num(l_word)
-                left_per_test.append(new_word_l)
+                left_per_test.append(hash(new_word_l))
 
                 #SECOND LEFT WORD OF PERIOD
-                if y != 0:
+                if i != 0:
                     l_count = 0
-                    sl_str = split_str[y-1]
+                    sl_str = split_str[i-1]
                     word_l = rm_num(sl_str)
-                    second_left_test.append(word_l)
+                    second_left_test.append(hash(word_l))
                 else:
                     second_left.append(0)
 
                 #RIGHT WORD OF PERIOD
-                if y+1 < len(split_str_test):
+                if i+1 < len(split_str_test):
                     r_count = 0
-                    r_str = split_str[y+1]
+                    r_str = split_str[i+1]
                     new_word_r = rm_num(r_str)
-                    right_per_test.append(new_word_r)
+                    right_per_test.append(hash(new_word_r))
 
                     if new_word_r[0] != ' ':
                         if new_word_r[0].isupper():
@@ -284,15 +282,15 @@ with open('SBD.test.txt') as f_test:
                     right_per_test.append(0)
                     right_cap_test.append(0)
                 #SECOND WORD AFTER RIGHT OF PERIOD
-                if y+2 < len(split_str_test):
+                if i+2 < len(split_str_test):
                     r_count = 0
-                    r_str = split_str_test[y+2]
+                    r_str = split_str_test[i+2]
                     new_word_r = rm_num(r_str)
-                    second_right.append(new_word_r)
+                    second_right_test.append(hash(new_word_r))
                     if len(new_word_r) < 4:
-                        small_second_right_test.append(1)
+                        small_second_right_test.append(1.0)
                     else:
-                        small_second_right_test.append(0)
+                        small_second_right_test.append(0.0)
                 else:
                     second_right_test.append(0)
                     small_second_right_test.append(0)
@@ -314,22 +312,22 @@ with open('SBD.test.txt') as f_test:
                 #LEFT WORD OF PERIOD
                 l_word = x[:-5]
                 new_word_l = rm_num(l_word)
-                left_per_test.append(new_word_l)
+                left_per_test.append(hash(new_word_l))
 
                 #SECOND WORD LEFT OF PERIOD
-                if y != 0:
+                if i != 0:
                     l_count = 0
-                    sl_str = split_str_test[y-1]
+                    sl_str = split_str_test[i-1]
                     word_l = rm_num(sl_str)
-                    second_left_test.append(word_l)
+                    second_left_test.append(hash(word_l))
                 else:
                     second_left_test.append(0)
                 #RIGHT WORD OF PERIOD
-                if y+1 < len(split_str_test):
+                if i+1 < len(split_str_test):
                     r_count = 0
-                    r_str = split_str[y+1]
+                    r_str = split_str[i+1]
                     new_word_r = rm_num(r_str)
-                    right_per_test.append(new_word_r)
+                    right_per_test.append(hash(new_word_r))
                     
                     if new_word_r[0] != ' ':
                         if new_word_r[0].isupper():
@@ -349,18 +347,18 @@ with open('SBD.test.txt') as f_test:
                     right_cap_test.append(0)
                 
                 #SECOND WORD RIGHT OF PERIOD
-                if y+2 < len(split_str_test):
+                if i+2 < len(split_str_test):
                     r_count = 0
-                    r_str = split_str_test[y+2]
+                    r_str = split_str_test[i+2]
                     new_word_r = rm_num(r_str)
-                    second_right_test.append(new_word_r)
+                    second_right_test.append(hash(new_word_r))
                     if len(new_word_r) < 4:
-                        small_second_right_test.append(1)
+                        small_second_right_test.append(1.0)
                     else:
-                        small_second_right_test.append(0)
+                        small_second_right_test.append(0.0)
                 else:
                     second_right_test.append(0)
-                    small_second_right_test.append(0)
+                    small_second_right_test.append(0.0)
                 #LEFT WORD LESS THAN 3 CHARS
                 if len(new_word_l) < 3:
                     len_three_test.append(1)
@@ -376,24 +374,35 @@ with open('SBD.test.txt') as f_test:
 
     #print(small_second_right)
 
-lb_test = LabelEncoder()
-fl_right_per_test = lb_test.fit_transform(right_per_test)
-fl_left_per_test = lb_test.fit_transform(left_per_test)
-sec_fl_left_test = lb_test.fit_transform(second_left_test)
-sec_fl_right_test = lb_test.fit_transform(second_right_test)
-        
-f_vect_test = [[] for x in range(len(left_per))]
+
+#lb_test = LabelEncoder()
+#fl_right_per_test = lb_test.fit_transform(right_per_test)
+#fl_left_per_test = lb_test.fit_transform(left_per_test)
+#sec_fl_left_test = lb_test.fit_transform(second_left_test)
+#sec_fl_right_test = lb_test.fit_transform(second_right_test)
+
+print(len(left_per_test))
+print(len(right_per_test))
+print(len(len_three_test))
+print(len(left_cap_test))
+print(len(second_left_test))
+print(len(second_right_test))
+print(len(small_second_right_test))
+print(len(second_right))
+print(len(small_second_right))
+f_vect_test = [[] for x in range(len(second_right_test))]
 for x in range(len(left_per_test)):
     f_in_vect_test = []
-    f_in_vect_test.append(fl_left_per_test[x])
-    f_in_vect_test.append(fl_right_per_test[x])
+    f_in_vect_test.append(left_per_test[x])
+    f_in_vect_test.append(right_per_test[x])
     f_in_vect_test.append(len_three_test[x])
     f_in_vect_test.append(left_cap_test[x])
     f_in_vect_test.append(right_cap_test[x])
-   # f_in_vect.append(sec_fl_left[x])
-   # f_in_vect.append(sec_fl_right[x])
-   # f_in_vect.append(small_second_right[x])
-   #f_in_vect.append(cl_label[x])
+    f_in_vect_test.append(second_left_test[x])
+    f_in_vect_test.append(second_right_test[x])
+    f_in_vect_test.append(small_second_right_test[x])
+   
+ 
     f_vect_test[x] = f_in_vect_test
 
 
@@ -404,18 +413,16 @@ X_train = f_vect
 Y_train = cl_label
 X_test = f_vect_test
 Y_test = cl_label_test
-#X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33)
-clf = DecisionTreeClassifier(max_depth=8, criterion="entropy")
+
+clf = DecisionTreeClassifier(max_depth=9, criterion="entropy")
 clf = clf.fit(X_train, Y_train)
-#print(clf.get_params())
-res_pred = clf.predict(X_test)
-score = clf.score(X_test, Y_test)
+
+#res_pred = clf.predict(X_test)
+score = clf.score(X_test, Y_test) 
 print(score)
-#print(X_test) 
-predictions = clf.predict_proba(X_test)
-#print(predictions)
-    
-    #print(classification_report(Y_test, predictions, target_names=['EOS', 'NEOS']))
+
+
+
 
     
 
